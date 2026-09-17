@@ -1,0 +1,186 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>数据输入</title>
+  <link rel="stylesheet" href="/static/styles.css?v=workspace-4">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SC</div>
+        <div><strong>Supply Control</strong><span>供应链计划工作台</span></div>
+      </div>
+      <nav>
+        <a href="/"><span>01</span>存销看板</a>
+        <a class="active" href="/data-import"><span>02</span>数据输入</a>
+        <a href="/purchase-reconciliation"><span>03</span>采购到货核对</a>
+        <a href="/data-edit"><span>04</span>采购与调拨维护</a>
+      </nav>
+      <div class="sidebar-note">
+        <span class="dot"></span>
+        <div><b>本地运行</b><small>数据保存在当前电脑</small></div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="workspace-topbar"><div class="module-switch" role="navigation" aria-label="系统模块"><a href="/" class="active" aria-current="page">看板分析</a><a href="/master-data">基础数据</a></div></div>
+<header><div><p class="eyebrow">DATA IMPORT</p><h1>数据输入</h1><p class="subtitle">上传每日业务文件，查看日期校验、质检明细和历史批次。</p></div><a class="button secondary" href="/api/templates">下载导入模板</a></header>
+      <section id="upload" class="panel upload-panel">
+        <div class="panel-title">
+          <div><span class="step">02</span><h2>创建今日数据批次</h2></div>
+          <span class="hint">至少需要：库存余量 + 报货订单实时</span>
+        </div>
+
+        <form id="uploadForm">
+          <input name="quality_only" type="hidden" value="true">
+          <input name="safety_days" type="hidden" value="1">
+          <div class="form-row">
+            <label>业务日期<input id="businessDate" name="business_date" type="date" required></label>
+            <div class="input-purpose"><span>本次处理方式</span><strong>数据接入 + 日期校验 + 数据质检</strong><small>不会在基础看板中生成预测、预警或趋势结论</small></div>
+          </div>
+          <div class="input-specs">
+            <span><b>必需</b>库存余量</span><span><b>必需</b>报货订单实时</span>
+            <span>采购订单</span><span>入库日报</span><span>调拨明细</span><span>物料存销报表</span>
+          </div>
+          <label id="dropzone" class="dropzone" for="fileInput">
+            <input id="fileInput" name="files" type="file" accept=".xlsx,.xls" multiple required>
+            <div class="upload-icon">↑</div>
+            <strong>点击选择或拖入每日 Excel</strong>
+            <span>支持采购订单、库存余量、入库日报、transfer、报货订单实时、物料存销报表</span>
+            <small>单个文件不超过 40MB · 文件名建议保留业务关键字</small>
+          </label>
+          <div id="fileList" class="file-list"></div>
+          <div class="actions">
+            <div>
+              <p>上传后生成文件识别和数据质检结果，不直接形成业务判断。</p>
+              <details class="advanced-settings"><summary>后续计算设置</summary><label class="check-label"><input name="force_calculation" type="checkbox" value="true"> 库存日期不合格时允许后续模拟计算</label></details>
+            </div>
+            <button id="submitButton" class="button primary" type="submit">上传并执行质检</button>
+          </div>
+        </form>
+        <div id="message" class="message hidden"></div>
+      </section>
+
+      <section id="summary" class="summary-section hidden">
+        <div class="section-heading">
+          <div><p class="eyebrow">BATCH RESULT</p><h2>批次处理明细 <span id="resultModeBadge" class="mode-badge"></span></h2></div>
+          <button id="exportButton" class="button secondary">导出 Excel</button>
+        </div>
+        <details id="analysisDetails" class="analysis-details">
+          <summary>查看后续计算结果（当前不作为基础看板结论）</summary>
+          <div class="metric-grid">
+            <article class="metric neutral"><span>计算记录</span><strong id="totalCount">0</strong><small>仓库 × 物料</small></article>
+            <article class="metric red"><span>红色标记</span><strong id="redCount">0</strong><small>计算结果，仅供追溯</small></article>
+            <article class="metric yellow"><span>黄色标记</span><strong id="yellowCount">0</strong><small>计算结果，仅供追溯</small></article>
+            <article class="metric green"><span>绿色标记</span><strong id="greenCount">0</strong><small>计算结果，仅供追溯</small></article>
+          </div>
+
+          <div class="panel table-panel">
+            <div class="table-toolbar">
+              <div class="filters">
+                <button class="filter active" data-risk="全部">全部</button>
+                <button class="filter" data-risk="红色">红色</button>
+                <button class="filter" data-risk="黄色">黄色</button>
+                <button class="filter" data-risk="绿色">绿色</button>
+              </div>
+              <input id="searchInput" type="search" placeholder="搜索仓库、物料编码或名称">
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead><tr>
+                  <th>标记</th><th>仓库</th><th>物料</th><th>可用库存</th>
+                  <th>T+1需求</th><th>T+1到货/调拨</th><th>T+1预计</th>
+                  <th>T+2需求</th><th>T+2到货/调拨</th><th>T+2预计</th><th>计算说明</th>
+                </tr></thead>
+                <tbody id="riskRows"></tbody>
+              </table>
+            </div>
+            <div id="emptyState" class="empty-state hidden">没有符合筛选条件的数据。</div>
+          </div>
+        </details>
+
+        <div class="panel file-result-panel">
+          <div class="panel-title"><div><span class="step">✓</span><h2>文件处理明细</h2></div></div>
+          <div id="processedFiles" class="processed-files"></div>
+        </div>
+
+        <div class="panel file-result-panel">
+          <div class="panel-title"><div><span class="step">QC</span><h2>数据质检报告</h2></div></div>
+          <div class="table-scroll"><table class="compact-table"><thead><tr>
+            <th>文件</th><th>工作表</th><th>原始行</th><th>有效行</th><th>删除行</th>
+            <th>必填缺失</th><th>日期失败</th><th>数值失败</th><th>重复</th>
+            <th>未匹配仓库</th><th>未匹配物料</th><th>负数</th><th>文件日期</th><th>状态</th><th>允许计算</th>
+          </tr></thead><tbody id="qualityRows"></tbody></table></div>
+        </div>
+
+        <div class="panel file-result-panel">
+          <div class="panel-title"><div><span class="step">WH</span><h2>未匹配仓库</h2></div></div>
+          <div id="unmatchedWarehouses" class="processed-files"></div>
+        </div>
+      </section>
+
+      <section class="panel dashboard-filter-panel">
+        <div class="filter-title"><span class="step">⌕</span><div><strong>批次筛选条件</strong><small>选择要查看的数据批次范围</small></div></div>
+        <label>业务日期<select id="dashboardDateFilter"><option value="">全部日期</option></select></label>
+        <label>处理状态<select id="dashboardStatusFilter"><option value="">全部状态</option></select></label>
+        <label>文件类型<select id="dashboardFileFilter"><option value="">全部文件</option></select></label>
+        <div class="filter-actions"><button id="applyDashboardFilters" class="button primary" type="button">应用筛选</button><button id="resetDashboardFilters" class="button secondary" type="button">重置</button></div>
+      </section>
+
+      <section id="dashboard" class="dashboard-section">
+        <div class="dashboard-status panel">
+          <div>
+            <span id="dashboardStatusDot" class="status-dot waiting"></span>
+            <div><small>当前数据状态</small><strong id="dashboardStatusText">正在读取…</strong></div>
+          </div>
+          <p id="dashboardStatusHint">看板只展示数据准备和处理状态，不输出预测结论。</p>
+        </div>
+
+        <div class="dashboard-metrics">
+          <article class="dashboard-metric"><span>最近业务日期</span><strong id="dashboardLatestDate">—</strong><small id="dashboardRunStatus">暂无处理批次</small></article>
+          <article class="dashboard-metric"><span>已识别文件</span><strong id="dashboardFileCount">0 / 6</strong><small>核心文件至少需要 2 类</small></article>
+          <article class="dashboard-metric"><span>有效数据行</span><strong id="dashboardValidRows">0</strong><small id="dashboardRowHint">等待数据导入</small></article>
+          <article class="dashboard-metric"><span>启用仓库映射</span><strong id="dashboardMappingCount">0</strong><small id="dashboardMappingHint">尚未建立映射</small></article>
+        </div>
+
+        <div class="dashboard-grid">
+          <article class="panel dashboard-card">
+            <div class="card-heading"><div><p class="eyebrow">DATA READINESS</p><h2>文件就绪情况</h2></div><a href="#upload">去导入</a></div>
+            <div id="readinessList" class="readiness-list"><div class="skeleton-line"></div><div class="skeleton-line"></div></div>
+          </article>
+          <article class="panel dashboard-card">
+            <div class="card-heading"><div><p class="eyebrow">DATA QUALITY</p><h2>最近批次质检</h2></div><span id="qualityBatchLabel">暂无批次</span></div>
+            <div id="qualitySnapshot" class="quality-snapshot"></div>
+          </article>
+        </div>
+
+        <article class="panel dashboard-card master-data-card">
+          <div class="card-heading"><div><p class="eyebrow">MASTER DATA</p><h2>基础数据维护</h2></div><a href="/master-data#mapping">进入仓库映射维护</a></div>
+          <div class="master-data-layout">
+            <div class="master-stat-grid">
+              <div><span>正式映射</span><strong id="masterEnabledMappings">0</strong><small>当前启用</small></div>
+              <div><span>停用映射</span><strong id="masterDisabledMappings">0</strong><small>保留历史</small></div>
+              <div><span>未匹配记录</span><strong id="masterUnmatchedRecords">0</strong><small>最近筛选批次</small></div>
+            </div>
+            <div><h3>待维护仓库</h3><div id="masterUnmatchedList" class="master-unmatched-list"></div></div>
+          </div>
+        </article>
+
+        <article class="panel dashboard-card recent-card">
+          <div class="card-heading"><div><p class="eyebrow">RECENT RUNS</p><h2>最近处理批次</h2></div><span>仅展示处理事实，不做趋势解读</span></div>
+          <div class="table-scroll"><table class="dashboard-table"><thead><tr>
+            <th>业务日期</th><th>创建时间</th><th>处理状态</th><th>文件数</th><th>有效行</th><th>未匹配仓库记录</th><th>库存日期状态</th>
+          </tr></thead><tbody id="recentRunRows"></tbody></table></div>
+          <div id="recentRunEmpty" class="empty-state hidden">还没有处理批次，请先导入每日数据。</div>
+        </article>
+      </section>
+
+    </main>
+  </div>
+  <div id="riskModal" class="modal hidden"><div class="modal-card"><button id="closeRiskModal" class="modal-close">×</button><div id="riskDetail"></div></div></div>
+  <script src="/static/app.js?v=workspace-4"></script>
+</body>
+</html>

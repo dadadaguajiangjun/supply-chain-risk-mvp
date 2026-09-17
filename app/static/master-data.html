@@ -1,0 +1,85 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>基础数据维护</title>
+  <link rel="stylesheet" href="/static/styles.css?v=workspace-4">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand"><div class="brand-mark">SC</div><div><strong>Supply Control</strong><span>供应链计划工作台</span></div></div>
+      <nav aria-label="基础数据菜单">
+        <a href="#materials" data-master="materials" class="active" aria-current="page"><span>01</span>物料信息</a>
+        <a href="#suppliers" data-master="suppliers"><span>02</span>供应商信息</a>
+        <a href="#warehouses" data-master="warehouses"><span>03</span>仓库信息</a>
+        <a href="#transfer-routes" data-master="transfer-routes"><span>04</span>调拨路线</a>
+        <a href="#material-controls" data-master="material-controls"><span>05</span>物料管控表</a>
+        <a href="#mapping" data-master="warehouse-mappings"><span>06</span>仓库映射</a>
+      </nav>
+      <div class="sidebar-note"><span class="dot"></span><div><b>本地运行</b><small>数据保存在当前电脑</small></div></div>
+    </aside>
+    <main>
+      <div class="workspace-topbar"><div class="module-switch" role="navigation" aria-label="系统模块"><a href="/">看板分析</a><a href="/master-data" class="active" aria-current="page">基础数据</a></div></div>
+      <header><div><p class="eyebrow">MASTER DATA</p><h1>基础数据维护</h1><p class="subtitle">支持手工新增和修改，也支持按模板导入 Excel 或 CSV。</p></div></header>
+      <section class="panel workspace-section master-maintenance">
+        <div class="panel-title">
+          <div><span class="step">01</span><h2 id="maintenanceTitle">手工维护物料信息</h2></div>
+          <div class="inline-actions">
+            <a id="xlsxTemplate" class="button secondary" href="/api/master-data/materials/template?format=xlsx">Excel模板</a>
+            <a id="csvTemplate" class="button secondary" href="/api/master-data/materials/template?format=csv">CSV模板</a>
+            <label class="button secondary file-button">导入Excel/CSV<input id="masterImport" type="file" accept=".xlsx,.xls,.csv"></label>
+          </div>
+        </div>
+        <form id="masterForm" class="master-edit-form"></form>
+        <div id="masterMessage" class="message hidden"></div>
+      </section>
+      <section class="panel workspace-section master-list-section">
+        <div class="workspace-toolbar">
+          <div><p class="eyebrow" id="masterEyebrow">MATERIAL</p><h2 id="masterTitle">物料信息</h2></div>
+          <label>搜索<input id="masterSearch" type="search" placeholder="输入编码或名称"></label>
+        </div>
+        <div class="table-scroll"><table id="masterTable"><thead id="masterHead"></thead><tbody id="masterRows"></tbody></table></div>
+        <div id="masterEmpty" class="empty-state hidden">暂无基础数据，可在上方手工新增或导入文件。</div>
+        <div class="inline-actions"><button id="masterPrev" class="button secondary" type="button">上一页</button><span id="masterCount" class="hint"></span><button id="masterNext" class="button secondary" type="button">下一页</button></div>
+      </section>
+      <section id="mapping" hidden class="summary-section">
+        <div class="section-heading">
+          <div><p class="eyebrow">MASTER DATA</p><h2>仓库映射维护</h2></div>
+          <div class="inline-actions"><a class="button secondary" href="/api/warehouse-mappings/template">下载映射模板</a><label class="button secondary file-button">导入映射<input id="mappingImport" type="file" accept=".xlsx,.xls"></label></div>
+        </div>
+        <div id="mappingMessage" class="message hidden"></div>
+        <div class="panel mapping-panel">
+          <div class="mapping-toolbar">
+            <label>来源系统<select id="mappingSourceFilter"><option value="">全部来源</option></select></label>
+            <label>启用状态<select id="mappingEnabledFilter"><option value="">全部状态</option><option value="1">启用</option><option value="0">停用</option></select></label>
+            <label>搜索<input id="mappingKeywordFilter" type="search" placeholder="原始/标准仓库编码或名称"></label>
+          </div>
+          <form id="mappingForm" class="mapping-form">
+            <input id="mappingId" type="hidden">
+            <label>来源系统<input name="source_system" required placeholder="stock / purchase_order / *"></label>
+            <label>原始仓库编码<input name="raw_warehouse_code"></label>
+            <label>原始仓库名称<input name="raw_warehouse_name"></label>
+            <label>标准仓库编码<input name="standard_warehouse_code" required></label>
+            <label>标准仓库名称<input name="standard_warehouse_name" required></label>
+            <label>特殊别名<input name="special_alias" placeholder="多个别名用逗号分隔"></label>
+            <label>生效日期<input name="effective_start_date" type="date"></label>
+            <label>失效日期<input name="effective_end_date" type="date"></label>
+            <label>备注<input name="remark"></label>
+            <label class="check-label"><input name="enabled" type="checkbox" checked> 启用</label>
+            <div class="inline-actions"><button class="button primary" type="submit">保存映射</button><button id="mappingCancel" class="button secondary" type="button">取消编辑</button></div>
+          </form>
+          <div class="table-scroll"><table class="compact-table"><thead><tr>
+            <th>ID</th><th>来源</th><th>原始编码</th><th>原始名称</th><th>标准编码</th><th>标准名称</th><th>别名</th><th>有效期</th><th>状态</th><th>操作</th>
+          </tr></thead><tbody id="mappingRows"></tbody></table></div>
+          <div class="inline-actions"><button id="mappingPrev" type="button" class="button secondary">上一页</button><span id="mappingCount" class="hint"></span><button id="mappingNext" type="button" class="button secondary">下一页</button></div>
+        </div>
+      </section>
+    </main>
+  </div>
+  <script src="/static/common.js?v=4"></script>
+  <script src="/static/mapping.js?v=4"></script>
+  <script src="/static/master-data.js?v=5"></script>
+</body>
+</html>

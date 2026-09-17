@@ -1,0 +1,25 @@
+<!doctype html><html lang="zh-CN"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>采购到货核对</title><link rel="stylesheet" href="/static/styles.css?v=workspace-4"></head>
+<body><div class="app-shell"><aside class="sidebar"><div class="brand"><div class="brand-mark">SC</div><div><strong>Supply Control</strong><span>供应链计划工作台</span></div></div><nav>
+        <a href="/"><span>01</span>存销看板</a>
+        <a href="/data-import"><span>02</span>数据输入</a>
+        <a class="active" href="/purchase-reconciliation"><span>03</span>采购到货核对</a>
+        <a href="/data-edit"><span>04</span>采购与调拨维护</a>
+      </nav><div class="sidebar-note"><span class="dot"></span><div><b>本地运行</b><small>数据保存在当前电脑</small></div></div></aside><main>
+      <div class="workspace-topbar"><div class="module-switch" role="navigation" aria-label="系统模块"><a href="/" class="active" aria-current="page">看板分析</a><a href="/master-data">基础数据</a></div></div>
+<header><div><p class="eyebrow">KINGDEE × FLUX</p><h1>采购到货核对</h1><p class="subtitle">按金蝶单据编号与 FLUX 参考编号3核对到货日期和收货数量，查看基准日前后7天。</p></div></header>
+<section class="panel workspace-section operations-panel">
+<form id="reconcileFilters" class="planning-filters">
+  <label>分析基准日<input id="reconcileDate" type="date" required></label>
+  <label>前后天数<input id="reconcileDays" type="number" min="0" max="31" value="7" required></label>
+  <label>单据 / 关键词<input id="reconcileKeyword" type="search" placeholder="输入单号、名称或编码"></label>
+  <label>供应商<input id="reconcileSupplier" type="search" placeholder="输入供应商名称"></label>
+  <label>仓库<input id="reconcileWarehouse" type="search" placeholder="输入仓库名称"></label>
+  <label>物料<input id="reconcileMaterial" type="search" placeholder="输入物料编码或名称"></label>
+  <button id="reconcileSearch" class="button primary" type="submit">查询</button>
+  <button id="reconcileReset" class="button secondary" type="button">清空筛选</button>
+</form>
+<p class="hint">文字条件支持部分匹配，多个条件同时生效。按回车或点击查询；日期范围按交货日期筛选，默认基准日前后7天，每页100条。</p>
+<p id="reconcileMessage" class="hint" role="status" aria-live="polite"></p>
+<div class="table-scroll"><table class="operations-table"><thead><tr><th>单据编号</th><th>采购日期</th><th>供应商</th><th>仓库</th><th>物料编码</th><th>物料名称</th><th>采购数量</th><th>交货日期</th><th>剩余入库</th><th>金蝶已入库</th><th>FLUX预期</th><th>FLUX收货</th><th>数量差异</th><th>首次入库</th><th>最后入库</th><th>数量一致</th><th>按期到货</th><th>备注原因</th><th>操作</th></tr></thead><tbody id="reconcileRows"></tbody></table></div><div id="reconcileEmpty" class="empty-state hidden">当前日期范围内没有采购记录。</div></section>
+<div class="inline-actions"><button id="reconcilePrev" class="button secondary" type="button" disabled>上一页</button><span id="reconcileCount" class="hint" aria-live="polite"></span><button id="reconcileNext" class="button secondary" type="button" disabled>下一页</button></div>
+</main></div><script src="/static/purchase-reconciliation.js?v=search-5"></script></body></html>

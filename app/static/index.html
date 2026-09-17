@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>供应链计划数据看板</title>
+  <link rel="stylesheet" href="/static/styles.css?v=workspace-4">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="brand-mark">SC</div>
+        <div><strong>Supply Control</strong><span>供应链计划工作台</span></div>
+      </div>
+      <nav>
+        <a class="active" href="/"><span>01</span>存销看板</a>
+        <a href="/data-import"><span>02</span>数据输入</a>
+        <a href="/purchase-reconciliation"><span>03</span>采购到货核对</a>
+        <a href="/data-edit"><span>04</span>采购与调拨维护</a>
+      </nav>
+      <div class="sidebar-note">
+        <span class="dot"></span>
+        <div><b>本地运行</b><small>数据保存在当前电脑</small></div>
+      </div>
+    </aside>
+
+    <main>
+      <div class="workspace-topbar"><div class="module-switch" role="navigation" aria-label="系统模块"><a href="/" class="active" aria-current="page">看板分析</a><a href="/master-data">基础数据</a></div></div>
+      <header>
+        <div>
+          <p class="eyebrow">SUPPLY DATA CONTROL · MVP 01</p>
+          <h1>供应链计划数据看板</h1>
+          <p class="subtitle">按物料 × 仓库查看存量，以及对应的需求、采购到货和调拨数据。</p>
+        </div>
+        
+      </header>
+
+      <section class="panel operations-panel">
+        <div class="panel-title"><div><span class="step">01</span><h2>供应、库存与报货数据</h2></div><span id="planningSnapshotLabel" class="hint">正在读取数据…</span></div>
+        <div class="planning-filters">
+          <label>业务日期<input id="planningDate" type="date" required></label>
+          <label>仓库<input id="planningWarehouse" type="search" list="warehouseOptions" placeholder="输入仓库名称" autocomplete="off"><datalist id="warehouseOptions"></datalist></label>
+          <label>物料<input id="planningMaterial" type="search" list="materialOptions" placeholder="输入物料编码或名称" autocomplete="off"><datalist id="materialOptions"></datalist></label>
+          <label>物料负责人<input id="planningOwner" type="search" list="ownerOptions" placeholder="输入负责人姓名" autocomplete="off"><datalist id="ownerOptions"></datalist></label>
+          <label>采购负责人<input id="planningBuyer" type="search" list="buyerOptions" placeholder="输入采购负责人" autocomplete="off"><datalist id="buyerOptions"></datalist></label>
+          <label>供应商<input id="planningSupplier" type="search" list="supplierOptions" placeholder="输入供应商名称" autocomplete="off"><datalist id="supplierOptions"></datalist></label>
+          <label>物料分类<input id="planningCategory" type="search" list="categoryOptions" placeholder="输入或选择分类" autocomplete="off"><datalist id="categoryOptions"></datalist></label>
+          <label>调拨区域<input id="planningArea" type="search" list="areaOptions" placeholder="输入或选择路线" autocomplete="off"><datalist id="areaOptions"></datalist></label>
+          <button id="planningSearch" class="button primary" type="button">查询</button>
+          <button id="planningReset" class="button secondary" type="button">清空筛选</button>
+        </div>
+        <p class="hint">可输入名称或编码片段后按回车查询，也可选择候选项精确筛选；留空表示全部。每个输入框最多显示50个候选项，继续输入可缩小范围。</p>
+        <div class="table-scroll"><table class="operations-table supply-dashboard-table"><thead><tr>
+          <th>物料负责人</th><th>采购负责人</th><th>仓库</th>
+          <th>供应商</th><th>供应到仓方式</th><th>物料名称</th><th>物料编码</th><th>调拨区域</th>
+          <th>调拨汇总（近三天）</th><th>采购数据（未来7天）</th><th>库存</th><th>库存+调拨</th><th>库存+调拨+采购</th>
+          <th>过去七天日均报货</th><th>过去三天报货</th><th>今天报货</th>
+          <th>过去七天日均报货可销</th><th>过去三天报货可销</th><th>今天报货可销</th>
+        </tr></thead><tbody id="planningRows"></tbody></table></div>
+        <p class="hint">历史需求：T-7～T-1日出库；今天：当日报货。调拨：T-3～T-1入库减出库（含未转正式单的手工量）。采购：T+1～T+7采购数量扣除WMS累计收货。库存叠加列按上述口径作算术展示，历史调拨可能已反映在库存快照中。</p>
+        <div class="inline-actions"><button id="planningPrev" class="button secondary" type="button">上一页</button><span id="planningCount" class="hint"></span><button id="planningNext" class="button secondary" type="button">下一页</button></div>
+        <div id="planningEmpty" class="empty-state hidden">当前筛选条件下没有物料，请检查基础资料和人员分工。</div>
+      </section>
+
+    </main>
+  </div>
+  <script src="/static/common.js?v=4"></script>
+  <script src="/static/planning.js?v=search-5"></script>
+</body>
+</html>

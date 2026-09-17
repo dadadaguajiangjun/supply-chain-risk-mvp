@@ -1,0 +1,28 @@
+.venv/
+__pycache__/
+.pytest_cache/
+*.pyc
+# 本地数据、测试数据库和业务报告
+data/
+reports/
+
+# 密钥和连接配置
+.env
+.env.*
+!.env.example
+
+# 数据库及日志
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.sqlite-*
+*.sqlite3-*
+*.log
+
+# Excel/CSV和生成的演示文件保留本地，模板由接口生成
+demo_files/
+*.xlsx
+*.xls
+*.csv
+*.tsv
