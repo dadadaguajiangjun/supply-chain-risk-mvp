@@ -1,0 +1,15 @@
+# 本地数据、测试数据库和业务报告
+data/
+reports/
+
+# 密钥和连接配置
+.env
+.env.*
+!.env.example
+
+# 数据库及日志
+*.db
+*.db-*
+*.sqlite
+*.sqlite3
+*.log
